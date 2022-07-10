@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+usage="
+usage: $(basename $0) [--refresh] [GREP_ARG, ...]
+
+EXAMPLES
+
+  Refresh the local cache file
+
+    $(basename $0) --refresh
+
+  Search for all track/exercise strings that have 'plsql' in them.
+
+    $(basename $0) plsql
+"
+
+if [[ "$1" == "--help" ]]; then
+    echo "$usage"
+    exit 0
+elif [[ "$1" == "--refresh" ]]; then
+    # Setup directory for the refresh.
+    mkdir -p ~/.cache/exercism
+    rm ~/.cache/exercism/exercise-slugs.txt
+
+    # Get all the tracks
+    curl 'https://exercism.org/api/v2/tracks' | tee ~/.cache/exercism/tracks.json |
+        jq '.tracks[].slug' -r > ~/.cache/exercism/track-slugs.txt
+
+    # For each track, get all the exercises.
+    # May need re-worked if any tracks start having whitespace or other strange characters.
+    for track in $(cat ~/.cache/exercism/track-slugs.txt); do
+        curl "https://exercism.org/api/v2/tracks/$track/exercises" | tee ~/.cache/exercism/$track-exercises.json |
+            jq '.exercises[].slug' -r | sed "s|^|$track/|" |
+            tee ~/.cache/exercism/$track-exercise-slugs.txt >> ~/.cache/exercism/exercise-slugs.txt
+    done
+else
+    grep "$@" ~/.cache/exercism/exercise-slugs.txt
+fi
