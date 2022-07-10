@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -e  # Stop script if something fails.
+
+usage="
+usage $(basename $0) exercise
+
+Download the exercise to your exercism working directory and initialize as a
+git repository.
+
+EXAMPLES
+
+  get-exercism plsql/hello-world
+"
+
+if [[ "$1" == "--help" ]]; then
+    echo "$usage"
+    exit 0
+fi
+
+exercise_path="$1"
+exercise="${exercise_path#*/}"
+track="${exercise_path%%/*}"
+# See https://mywiki.wooledge.org/BashGuide/Parameters#Parameter_Expansion
+# exercise_path="plsql/hello/world"
+# echo "${exercise_path#*/}"
+# # hello/world
+#
+# echo "${exercise_path%%/*}"
+# # plsql
+
+exercism_workspace=$(exercism workspace)
+
+exercism download -t "$track" -e "$exercise"
+
+absolute_path="$exercism_workspace/$exercise_path"
+
+if [[ ! -d "$absolute_path" ]]; then
+    echo "$absolute_path is not a directory."
+    exit 1
+fi
+
+git -C "$absolute_path" init > /dev/stderr
+git -C "$absolute_path" add .
+git -C "$absolute_path" commit -m "init" > /dev/stderr
