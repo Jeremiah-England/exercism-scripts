@@ -10,7 +10,7 @@ git repository.
 
 EXAMPLES
 
-  get-exercism plsql/hello-world
+  $(basename $0) plsql/hello-world
 "
 
 if [[ "$1" == "--help" ]]; then
