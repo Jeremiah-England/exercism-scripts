@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+script_name=$(basename "$0")
+
+usage="Usage: $script_name <track>"
+
+# Echo the help message if it was requested or if the wrong number of arguments were passed.
+if [[ ! $# -eq 1 ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    echo "$usage"
+    exit 0
+fi
+
+track="$1"
+workspace=$(exercism workspace)
+
+# These are already sorted in the order to do them. They came from the API that way.
+for exercise in $(exercism-search "$track/"); do
+    if [[ ! -d "$workspace/$exercise" ]]; then
+        exercism-get "$exercise"
+        exit 0
+    fi
+done
